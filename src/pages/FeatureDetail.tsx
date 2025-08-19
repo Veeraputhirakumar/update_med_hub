@@ -67,12 +67,7 @@ const FeatureDetail = () => {
               style={{ animationDelay: `${index * 0.1}s` }}
               onClick={() => {
                 // Navigate to the specific model interface
-                if (subModel.id === 'symptom-predictor') {
-                  window.location.href = '/model/symptom-predictor';
-                } else {
-                  // For other models, show alert (can be replaced with actual navigation)
-                  alert(`Opening ${subModel.name} - This would navigate to the interactive model interface`);
-                }
+                window.location.href = `/model/${subModel.id}`;
               }}
             >
               <CardContent className="p-6 h-full">
