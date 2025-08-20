@@ -75,18 +75,7 @@ export const features: Feature[] = [
           findings: ['No significant abnormalities detected', 'Healthy retinal structure']
         }
       },
-      {
-        id: 'risk-analyzer',
-        name: 'Medical History Risk Analyzer',
-        description: 'Upload medical records for comprehensive risk assessment',
-        icon: '📋',
-        inputType: 'file',
-        mockOutput: {
-          overallRisk: 'Medium',
-          riskFactors: ['Family history of diabetes', 'Elevated cholesterol'],
-          recommendations: ['Regular exercise', 'Dietary modifications', 'Annual checkups']
-        }
-      }
+      
     ]
   },
   {

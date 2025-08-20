@@ -9,6 +9,7 @@ import FeatureDetail from "./pages/FeatureDetail";
 // Import all sub-model components
 import SymptomPredictor from "./components/models/SymptomPredictor";
 import SkinClassifier from "./components/models/SkinClassifier";
+import EyeDiseaseDetector from "./components/models/EyeDiseaseDetector";
 import DrugInteractionChecker from "./components/models/DrugInteractionChecker";
 import VoiceEmotionClassifier from "./components/models/VoiceEmotionClassifier";
 import MealPlanGenerator from "./components/models/MealPlanGenerator";
@@ -22,7 +23,12 @@ const App = () => (
     <TooltipProvider>
       <Toaster />
       <Sonner />
-      <BrowserRouter>
+      <BrowserRouter
+        future={{
+          v7_startTransition: true,
+          v7_relativeSplatPath: true
+        }}
+      >
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -31,8 +37,7 @@ const App = () => (
             {/* Diagnosis System Models */}
             <Route path="model/symptom-predictor" element={<SymptomPredictor />} />
             <Route path="model/skin-classifier" element={<SkinClassifier />} />
-            <Route path="model/eye-detector" element={<SymptomPredictor />} />
-            <Route path="model/risk-analyzer" element={<SymptomPredictor />} />
+            <Route path="model/eye-detector" element={<EyeDiseaseDetector />} />
             
             {/* Health Report Models */}
             <Route path="model/pdf-summarizer" element={<SymptomPredictor />} />

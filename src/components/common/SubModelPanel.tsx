@@ -19,6 +19,7 @@ interface SubModelPanelProps {
   onReset: () => void;
   canAnalyze: boolean;
   disclaimer?: string;
+  hideInputPanel?: boolean;
 }
 
 const SubModelPanel = ({
@@ -34,8 +35,12 @@ const SubModelPanel = ({
   onAnalyze,
   onReset,
   canAnalyze,
-  disclaimer = "This AI tool is for informational purposes only and should not replace professional medical advice, diagnosis, or treatment. Always consult with qualified healthcare providers for medical decisions."
+  disclaimer = "This AI tool is for informational purposes only and should not replace professional medical advice, diagnosis, or treatment. Always consult with qualified healthcare providers for medical decisions.",
+  hideInputPanel = false
 }: SubModelPanelProps) => {
+  const gridClass = hideInputPanel
+    ? "grid grid-cols-1 gap-8"
+    : "grid grid-cols-1 lg:grid-cols-2 gap-8";
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-accent/5 to-primary/5">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -60,47 +65,31 @@ const SubModelPanel = ({
           </div>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <div className={gridClass}>
           {/* Input Panel */}
-          <Card className="medical-card">
-            <CardHeader>
-              <CardTitle className="flex items-center space-x-2">
-                <span>Input Information</span>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              {inputPanel}
-              
-              {/* Action Buttons */}
-              <div className="flex space-x-3 pt-4">
-                <Button
-                  onClick={onAnalyze}
-                  disabled={!canAnalyze || isAnalyzing}
-                  className="btn-medical text-white flex-1"
-                >
-                  {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
-                </Button>
-                <Button
-                  onClick={onReset}
-                  variant="outline"
-                  className="border-primary text-primary hover:bg-primary hover:text-white"
-                >
-                  Reset
-                </Button>
-              </div>
-
-              {/* Progress */}
-              {isAnalyzing && (
-                <div className="space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Processing...</span>
-                    <span className="text-primary font-medium">{progress}%</span>
+          {!hideInputPanel && (
+            <Card className="medical-card">
+              <CardHeader>
+                <CardTitle className="flex items-center space-x-2">
+                  <span>Input Information</span>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                {inputPanel}
+                
+                {/* Progress (kept for other models that use it) */}
+                {isAnalyzing && (
+                  <div className="space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">Processing...</span>
+                      <span className="text-primary font-medium">{progress}%</span>
+                    </div>
+                    <Progress value={progress} className="medical-progress" />
                   </div>
-                  <Progress value={progress} className="medical-progress" />
-                </div>
-              )}
-            </CardContent>
-          </Card>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Output Panel */}
           <Card className="medical-card">

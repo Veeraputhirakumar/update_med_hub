@@ -1,17 +1,18 @@
 import { useState, useRef } from 'react';
-import { Upload, Camera, CheckCircle, TrendingUp } from 'lucide-react';
+import { Upload, Camera, CheckCircle, TrendingUp, Eye } from 'lucide-react';
 import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Progress } from '@/components/ui/progress';
 import { ChartContainer, ChartLegend, ChartLegendContent, ChartTooltip, ChartTooltipContent } from '@/components/ui/chart';
-import { PieChart, Pie, Cell, RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
+import { RadialBarChart, RadialBar, PolarAngleAxis } from 'recharts';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import SubModelPanel from '../common/SubModelPanel';
 
-const SkinClassifier = () => {
+const EyeDiseaseDetector = () => {
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string>('');
   const [affectedArea, setAffectedArea] = useState('');
@@ -22,26 +23,9 @@ const SkinClassifier = () => {
   const [selectedDiseaseIndex, setSelectedDiseaseIndex] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const mockResults = {
-    classification: 'Psoriasis',
-    confidence: 82,
-    alternatives: [
-      { name: 'Psoriasis', probability: 82 },
-      { name: 'Eczema', probability: 12 },
-      { name: 'Normal', probability: 6 }
-    ],
-    careTips: [
-      'Use moisturizer twice daily',
-      'Avoid harsh soaps and detergents',
-      'Consider topical corticosteroids as prescribed',
-      'Consult dermatologist for proper treatment plan'
-    ],
-    riskLevel: 'Medium'
-  };
-
   const handleFileUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file && file.size <= 5 * 1024 * 1024) { // 5MB limit
+    if (file && file.size <= 5 * 1024 * 1024) {
       setImage(file);
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -56,6 +40,7 @@ const SkinClassifier = () => {
   const handleAnalyze = async () => {
     if (!image) return;
 
+    console.log('Starting analysis with image:', image.name);
     setIsAnalyzing(true);
     setProgress(10);
     setResults(null);
@@ -66,11 +51,13 @@ const SkinClassifier = () => {
       formData.append('image', image);
       if (affectedArea) formData.append('affectedArea', affectedArea);
 
-      const response = await fetch('/api/skin/analyze', {
+      console.log('Sending request to /api/eye/analyze');
+      const response = await fetch('/api/eye/analyze', {
         method: 'POST',
         body: formData,
       });
 
+      console.log('Response received:', response.status, response.statusText);
       setProgress(60);
 
       if (!response.ok) {
@@ -79,7 +66,14 @@ const SkinClassifier = () => {
         try {
           const j = JSON.parse(text);
           message = j?.error || message;
-          if (j?.details) message += `: ${j.details}`;
+          if (j?.details) {
+            // Check if it's a quota exceeded error
+            if (j.details.includes('429') || j.details.includes('quota') || j.details.includes('Too Many Requests')) {
+              message = 'API quota exceeded. Please try again later or upgrade your Gemini API plan.';
+            } else {
+              message += `: ${j.details}`;
+            }
+          }
         } catch (_) {
           if (text) message = text;
         }
@@ -95,50 +89,26 @@ const SkinClassifier = () => {
         .sort((a: any, b: any) => (Number(b?.probability) || 0) - (Number(a?.probability) || 0))
         .slice(0, 5);
       const rawAlts = diseasesSorted;
-      // Normalize probabilities to sum to 100 (relative confidence)
-      const sum = rawAlts.reduce((acc: number, d: any) => acc + (Number(d?.probability) || 0), 0);
-      let normalized = rawAlts.map((d: any) => ({ name: String(d?.name || 'Unknown'), probability: Math.max(0, Math.min(100, Math.round(Number(d?.probability) || 0))) }))
-        .slice(0, 5);
-      if (sum > 0) {
-        const scale = 100 / sum;
-        normalized = normalized.map((d) => ({ ...d, probability: Math.max(0, Math.min(100, Math.round(d.probability * scale))) }));
-        const normSum = normalized.reduce((acc, d) => acc + d.probability, 0);
-        const diff = 100 - normSum;
-        if (diff !== 0 && normalized.length > 0) {
-          const idx = normalized.reduce((maxIdx, d, i, arr) => (d.probability > arr[maxIdx].probability ? i : maxIdx), 0);
-          normalized[idx].probability = Math.max(0, Math.min(100, normalized[idx].probability + diff));
-        }
-      }
-      const top = normalized[0];
+
+      const totalProb = rawAlts.reduce((sum: number, d: any) => sum + (Number(d?.probability) || 0), 0);
+      const alternatives = rawAlts.map((d: any) => ({
+        ...d,
+        probability: totalProb > 0 ? Math.round((Number(d?.probability) || 0) * 100 / totalProb) : 0
+      }));
 
       setResults({
-        classification: top?.name || 'No clear finding',
-        confidence: top?.probability || 0,
-        alternatives: normalized,
-        careTips: Array.isArray(data?.recommendations) && data.recommendations.length > 0
-          ? data.recommendations
-          : [
-              'Keep the area clean and dry',
-              'Avoid known irritants or allergens',
-              'Use gentle, fragrance-free moisturizer',
-              'Seek medical care if symptoms worsen'
-            ],
-        riskLevel: (data?.diseases?.[0]?.severity as any) || 'Low',
-        disclaimer: data?.disclaimer || 'This is not a medical diagnosis. Consult a dermatologist or qualified clinician.',
-        sources: data?.sources || data?.diseases?.flatMap((d: any) => d?.sources || []) || [],
+        ...data,
+        alternatives,
         diseases: diseasesSorted,
-        explanation: data?.explanation || '',
-        triage: data?.triage || undefined,
-        globalRedFlags: Array.isArray(data?.redFlags) ? data.redFlags : [],
-        suggestedTests: Array.isArray(data?.suggestedTests) ? data.suggestedTests : [],
-        medications: Array.isArray(data?.medications) ? data.medications : [],
+        selectedDiseaseIndex: 0
       });
       setSelectedDiseaseIndex(0);
-    } catch (e: any) {
-      setError(e?.message || 'An error occurred');
+    } catch (err: any) {
+      setError(err.message || 'An error occurred during analysis');
     } finally {
-          setIsAnalyzing(false);
-        }
+      setIsAnalyzing(false);
+      setProgress(0);
+    }
   };
 
   const handleReset = () => {
@@ -147,18 +117,17 @@ const SkinClassifier = () => {
     setAffectedArea('');
     setResults(null);
     setError(null);
-    setProgress(0);
+    setSelectedDiseaseIndex(0);
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const getRiskColor = (level: string) => {
-    switch (level) {
-      case 'Low': return 'text-success';
-      case 'Medium': return 'text-warning';  
-      case 'High': return 'text-destructive';
-      default: return 'text-muted-foreground';
+  const getRiskColor = (severity: string) => {
+    switch (severity?.toLowerCase()) {
+      case 'high': return 'destructive';
+      case 'medium': return 'secondary';
+      default: return 'default';
     }
   };
 
@@ -167,72 +136,74 @@ const SkinClassifier = () => {
       {/* Image Upload */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
-          Upload Skin Image *
+          Upload Eye Image
         </label>
-        <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+        <div className="flex items-center gap-3">
           <input
             ref={fileInputRef}
             type="file"
-            accept="image/jpeg,image/png"
+            accept="image/*"
             onChange={handleFileUpload}
             className="hidden"
-            id="skin-image-upload"
+            id="eye-image-upload"
           />
-          {!imagePreview ? (
-            <div>
-              <Camera className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-sm text-muted-foreground mb-4">
-                Drag and drop or click to select skin image
-              </p>
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                <Upload className="w-4 h-4 mr-2" />
-                Select Image
-              </Button>
-              <p className="text-xs text-muted-foreground mt-2">
-                JPG, PNG up to 5MB
-              </p>
-            </div>
-          ) : (
-            <div>
-              <img
-                src={imagePreview}
-                alt="Skin preview"
-                className="max-w-full h-48 object-contain mx-auto mb-4 rounded"
-              />
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => fileInputRef.current?.click()}
-              >
-                Change Image
-              </Button>
-            </div>
-          )}
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => fileInputRef.current?.click()}
+            className="flex items-center gap-2"
+          >
+            <Upload className="w-4 h-4" />
+            Choose Image
+          </Button>
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={() => fileInputRef.current?.click()}
+          >
+            <Camera className="w-4 h-4 mr-2" />
+            Camera
+          </Button>
         </div>
+
+        {/* Image Preview */}
+        {imagePreview && (
+          <div className="mt-4">
+            <img
+              src={imagePreview}
+              alt="Eye preview"
+              className="max-w-full h-48 object-contain mx-auto mb-4 rounded"
+            />
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              Change Image
+            </Button>
+          </div>
+        )}
       </div>
 
       {/* Affected Area */}
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">
-          Affected Area (Optional)
+          Affected Eye Area (Optional)
         </label>
         <Select value={affectedArea} onValueChange={setAffectedArea}>
           <SelectTrigger className="medical-input">
             <SelectValue placeholder="Select affected area" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="face">Face</SelectItem>
-            <SelectItem value="arm">Arm</SelectItem>
-            <SelectItem value="leg">Leg</SelectItem>
-            <SelectItem value="torso">Torso</SelectItem>
-            <SelectItem value="hand">Hand</SelectItem>
-            <SelectItem value="foot">Foot</SelectItem>
-            <SelectItem value="scalp">Scalp</SelectItem>
-            <SelectItem value="other">Other</SelectItem>
+            <SelectItem value="left-eye">Left Eye</SelectItem>
+            <SelectItem value="right-eye">Right Eye</SelectItem>
+            <SelectItem value="both-eyes">Both Eyes</SelectItem>
+            <SelectItem value="eyelid">Eyelid</SelectItem>
+            <SelectItem value="cornea">Cornea</SelectItem>
+            <SelectItem value="conjunctiva">Conjunctiva</SelectItem>
+            <SelectItem value="sclera">Sclera (White part)</SelectItem>
+            <SelectItem value="around-eye">Around Eye</SelectItem>
           </SelectContent>
         </Select>
       </div>
@@ -281,7 +252,7 @@ const SkinClassifier = () => {
         Awaiting Analysis
       </h3>
       <p className="text-sm text-muted-foreground">
-        Upload a skin image and click "Run AI Analysis" to get classification
+        Upload an eye image and click "Run AI Analysis" to get classification
       </p>
       {error ? (
         <p className="text-sm text-destructive mt-4">{error}</p>
@@ -293,7 +264,7 @@ const SkinClassifier = () => {
       <div className="rounded-lg border p-3 bg-accent/20">
         <div className="flex items-start gap-3">
           {imagePreview ? (
-            <img src={imagePreview} alt="Skin preview" className="w-16 h-16 object-cover rounded" />
+            <img src={imagePreview} alt="Eye preview" className="w-16 h-16 object-cover rounded" />
           ) : null}
           <div className="text-sm">
             <div className="font-medium text-foreground">Submitted Image</div>
@@ -319,7 +290,7 @@ const SkinClassifier = () => {
           <p className="text-sm text-muted-foreground mt-2">{results.explanation}</p>
         ) : null}
         <p className="text-xs text-muted-foreground mt-2">
-          {results.disclaimer || 'This is not a medical diagnosis. Consult a dermatologist.'}
+          {results.disclaimer || 'This is not a medical diagnosis. Consult an ophthalmologist.'}
         </p>
       </div>
 
@@ -334,7 +305,7 @@ const SkinClassifier = () => {
 
         <TabsContent value="overview" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="rounded-2xl border p-4 bg-gradient-to-br from-primary/10 via-background to-accent/10 backdrop-blur-sm shadow-lg">
+            <div className="rounded-2xl border p-4 bg-gradient-to-br from-primary/10 via-background to-accent/10 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-foreground mb-4">Probability Breakdown</h3>
               {Array.isArray(results.diseases) && results.diseases.length > 0 && (
                 <>
@@ -342,7 +313,9 @@ const SkinClassifier = () => {
                     config={Object.fromEntries(
                       results.diseases.map((d: any, i: number) => [
                         String(i),
-                        { label: d.name as string, color: ['#6366f1', '#06b6d4', '#22c55e', '#eab308', '#ef4444'][i % 5] },
+                        { label: d.name as string, color: [
+                          '#4f46e5', '#06b6d4', '#22c55e', '#eab308', '#ef4444'
+                        ][i % 5] }
                       ])
                     )}
                     className="w-full"
@@ -361,14 +334,16 @@ const SkinClassifier = () => {
                       <RadialBar background dataKey="value" cornerRadius={6} />
                     </RadialBarChart>
                   </ChartContainer>
-                  <div className="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  {/* Custom legend below chart for clarity */}
+                  <div className="mt-3 flex flex-wrap gap-3">
                     {results.diseases.map((d: any, i: number) => (
-                      <div key={i} className="flex items-center justify-between rounded-md border p-2 text-xs">
-                        <div className="flex items-center gap-2">
-                          <span className="inline-block h-2.5 w-2.5 rounded-sm" style={{ backgroundColor: ['#6366f1', '#06b6d4', '#22c55e', '#eab308', '#ef4444'][i % 5] }} />
-                          <span className="text-muted-foreground truncate max-w-[160px]">{d.name}</span>
-                        </div>
-                        <span className="font-medium text-foreground">{Math.round(d.probability)}%</span>
+                      <div key={i} className="inline-flex items-center gap-2 text-xs">
+                        <span
+                          className="inline-block h-2.5 w-2.5 rounded-sm"
+                          style={{ backgroundColor: ['#4f46e5', '#06b6d4', '#22c55e', '#eab308', '#ef4444'][i % 5] }}
+                        />
+                        <span className="text-muted-foreground">{d.name}</span>
+                        <span className="font-medium text-foreground">{Math.max(0, Math.min(100, Math.round(d.probability)))}%</span>
                       </div>
                     ))}
                   </div>
@@ -376,39 +351,67 @@ const SkinClassifier = () => {
               )}
             </div>
 
-            <div className="rounded-2xl border p-4 bg-gradient-to-br from-accent/10 via-background to-primary/10 backdrop-blur-sm shadow-lg">
+            <div className="rounded-2xl border p-4 bg-gradient-to-br from-accent/10 via-background to-primary/10 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-foreground mb-4">Top Predictions</h3>
               <div className="space-y-3">
-                {results.diseases.map((disease: any, index: number) => (
+                {results.diseases?.map((disease: any, index: number) => (
                   <div key={index} className="rounded-xl p-4 border bg-background/60 hover:bg-background transition-colors">
                     <div className="flex items-center justify-between mb-2">
                       <span className="font-medium text-foreground">{disease.name}</span>
                       <div className="flex items-center space-x-2">
                         <Badge variant="outline" className={getRiskColor(disease.severity)}>
-                          {disease.severity || 'Low'} Risk
+                          {disease.severity} Risk
                         </Badge>
-                        <span className="text-sm font-bold text-primary">{Math.round(disease.probability)}%</span>
+                        <span className="text-sm font-bold text-primary">
+                          {Math.max(0, Math.min(100, Math.round(disease.probability)))}%
+                        </span>
                       </div>
                     </div>
-                    <div className="h-2 bg-accent/40 rounded">
-                      <div className="h-2 bg-primary rounded" style={{ width: `${Math.max(0, Math.min(100, Math.round(disease.probability)))}%` }} />
-                    </div>
+                    <Progress value={Math.max(0, Math.min(100, Math.round(disease.probability)))} className="medical-progress h-2" />
                     {disease.summary && (
                       <p className="text-xs text-muted-foreground mt-2">{disease.summary}</p>
                     )}
                   </div>
                 ))}
+              </div>
+              {/* Severity legend */}
+              <div className="flex items-center gap-3 text-xs text-muted-foreground mt-3">
+                <span className="inline-flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-red-500"></span> High</span>
+                <span className="inline-flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-yellow-500"></span> Medium</span>
+                <span className="inline-flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-green-500"></span> Low</span>
+              </div>
             </div>
           </div>
-        </div>
+
+          {results.explanation && (
+            <div className="mt-6 rounded-2xl border p-4 bg-gradient-to-br from-background to-accent/5">
+              <h3 className="text-lg font-semibold text-foreground mb-3">AI Analysis</h3>
+              <p className="text-muted-foreground">{results.explanation}</p>
+            </div>
+          )}
+
+          {results.triage && (
+            <div className="mt-6 rounded-2xl border p-4 bg-gradient-to-br from-background to-primary/5">
+              <h3 className="text-lg font-semibold text-foreground mb-3">Care Level</h3>
+              <Badge 
+                variant={results.triage === 'Emergency' ? 'destructive' : 
+                        results.triage === 'Urgent care' ? 'destructive' :
+                        results.triage === 'Primary care' ? 'secondary' : 'default'}
+                className="text-lg px-4 py-2"
+              >
+                {results.triage}
+              </Badge>
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="details" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            {/* Left: selectable list */}
             <div className="lg:col-span-1 rounded-lg border">
               <ScrollArea className="h-[360px]">
                 <div className="p-2 space-y-2">
-                  {results.diseases.map((disease: any, index: number) => {
+                  {results.diseases?.map((disease: any, index: number) => {
                     const isActive = index === selectedDiseaseIndex;
                     return (
                       <button
@@ -419,7 +422,7 @@ const SkinClassifier = () => {
                         <div className="flex items-center justify-between">
                           <span className="font-medium">{disease.name}</span>
                           <Badge variant="outline" className={getRiskColor(disease.severity)}>
-                            {Math.round(disease.probability)}%
+                            {Math.max(0, Math.min(100, Math.round(disease.probability)))}%
                           </Badge>
                         </div>
                         {disease.summary && (
@@ -430,19 +433,20 @@ const SkinClassifier = () => {
                   })}
                 </div>
               </ScrollArea>
-      </div>
+            </div>
 
+            {/* Right: detail view */}
             <div className="lg:col-span-2 rounded-lg border p-4">
-              {results.diseases[selectedDiseaseIndex] && (
-      <div>
+              {results.diseases?.[selectedDiseaseIndex] && (
+                <div>
                   <div className="flex items-center justify-between">
                     <div className="text-lg font-semibold">{results.diseases[selectedDiseaseIndex].name}</div>
                     <div className="flex items-center gap-2">
                       <Badge variant="outline" className={getRiskColor(results.diseases[selectedDiseaseIndex].severity)}>
-                        {results.diseases[selectedDiseaseIndex].severity || 'Low'}
+                        {results.diseases[selectedDiseaseIndex].severity}
                       </Badge>
-                      <Badge>{Math.round(results.diseases[selectedDiseaseIndex].probability)}%</Badge>
-          </div>
+                      <Badge>{Math.max(0, Math.min(100, Math.round(results.diseases[selectedDiseaseIndex].probability)))}%</Badge>
+                    </div>
                   </div>
                   {results.diseases[selectedDiseaseIndex].summary && (
                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{results.diseases[selectedDiseaseIndex].summary}</p>
@@ -452,7 +456,7 @@ const SkinClassifier = () => {
                     <div className="mt-4">
                       <div className="text-sm font-medium">Red flags</div>
                       <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
-                        {results.diseases[selectedDiseaseIndex].redFlags.map((r: string, i: number) => <li key={i}>{r}</li>)}
+                        {results.diseases[selectedDiseaseIndex].redFlags.map((r: string, i: number) => <li key={i} className="">{r}</li>)}
                       </ul>
                     </div>
                   )}
@@ -461,7 +465,7 @@ const SkinClassifier = () => {
                     <div className="mt-4">
                       <div className="text-sm font-medium">Likely tests</div>
                       <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
-                        {results.diseases[selectedDiseaseIndex].tests.map((t: string, i: number) => <li key={i}>{t}</li>)}
+                        {results.diseases[selectedDiseaseIndex].tests.map((t: string, i: number) => <li key={i} className="">{t}</li>)}
                       </ul>
                     </div>
                   )}
@@ -470,22 +474,22 @@ const SkinClassifier = () => {
                     <div className="mt-4">
                       <div className="text-sm font-medium">Care advice</div>
                       <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
-                        {results.diseases[selectedDiseaseIndex].careAdvice.map((c: string, i: number) => <li key={i}>{c}</li>)}
+                        {results.diseases[selectedDiseaseIndex].careAdvice.map((c: string, i: number) => <li key={i} className="">{c}</li>)}
                       </ul>
                     </div>
                   )}
                 </div>
               )}
-        </div>
-      </div>
+            </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="care" className="mt-4 space-y-4">
-          {Array.isArray(results.globalRedFlags) && results.globalRedFlags.length > 0 && (
+          {Array.isArray(results.redFlags) && results.redFlags.length > 0 && (
             <div className="rounded-lg border p-4">
               <div className="text-sm font-medium mb-2">General red flags</div>
               <ul className="list-disc pl-5 text-sm text-foreground">
-                {results.globalRedFlags.map((r: string, i: number) => <li key={i}>{r}</li>)}
+                {results.redFlags.map((r: string, i: number) => <li key={i}>{r}</li>)}
               </ul>
             </div>
           )}
@@ -497,17 +501,17 @@ const SkinClassifier = () => {
               </ul>
             </div>
           )}
-      <div>
+          <div>
             <h3 className="text-lg font-semibold text-foreground mb-3">Recommendations</h3>
-        <div className="space-y-2">
-              {results.careTips.map((rec: string, index: number) => (
-            <div key={index} className="flex items-start space-x-3">
-              <CheckCircle className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
+            <div className="space-y-2">
+              {results.recommendations?.map((rec: string, index: number) => (
+                <div key={index} className="flex items-start space-x-3">
+                  <CheckCircle className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-foreground">{rec}</span>
+                </div>
+              ))}
             </div>
-          ))}
-        </div>
-      </div>
+          </div>
         </TabsContent>
 
         <TabsContent value="meds" className="mt-4 space-y-4">
@@ -575,23 +579,16 @@ const SkinClassifier = () => {
           ))}
         </TabsContent>
       </Tabs>
-
-      <div className="pt-4 border-t border-border">
-        <div className="flex space-x-3">
-          <Button variant="outline" size="sm">Download PDF</Button>
-          <Button variant="outline" size="sm">Save Results</Button>
-        </div>
-      </div>
     </div>
   ) : null;
 
   return (
     <SubModelPanel
-      title="Skin Disease Classifier"
-      description="Upload skin images for AI-powered dermatological analysis and care recommendations"
+      title="Eye Disease Detector"
+      description="Upload eye images for AI-powered ophthalmological analysis and condition assessment"
       backLink="/feature/diagnosis"
       backLinkText="Back to Diagnosis Tools"
-      icon="📸"
+      icon="👁️"
       inputPanel={inputPanel}
       outputPanel={outputPanel}
       isAnalyzing={isAnalyzing}
@@ -604,4 +601,4 @@ const SkinClassifier = () => {
   );
 };
 
-export default SkinClassifier;
+export default EyeDiseaseDetector;

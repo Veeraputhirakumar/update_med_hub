@@ -36,6 +36,7 @@ const HealthRiskAssessment = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [progress, setProgress] = useState(0);
   const [results, setResults] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const chronicOptions = [
     'Diabetes', 'Hypertension', 'Heart Disease', 'High Cholesterol', 'Asthma', 'Arthritis'
@@ -88,20 +89,58 @@ const HealthRiskAssessment = () => {
     if (!formData.age || !formData.gender) return;
 
     setIsAnalyzing(true);
-    setProgress(0);
+    setProgress(10);
     setResults(null);
+    setError(null);
 
-    const interval = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setIsAnalyzing(false);
-          setResults(mockResults);
-          return 100;
-        }
-        return prev + 20;
+    try {
+      const payload = {
+        age: formData.age,
+        gender: formData.gender,
+        heightCm: formData.height,
+        weightKg: formData.weight,
+        smokingStatus: formData.smokingStatus,
+        exerciseFrequency: formData.exerciseFrequency,
+        alcoholConsumption: formData.alcoholConsumption,
+        familyHistory: formData.familyHistory,
+        chronicConditions: formData.chronicConditions,
+        medications: formData.medications,
+        labs: {},
+      };
+
+      const response = await fetch('/api/history/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-api-key': import.meta.env.VITE_GEMINI_API_KEY || '',
+        },
+        body: JSON.stringify(payload),
       });
-    }, 800);
+
+      setProgress(60);
+
+      if (!response.ok) {
+        const text = await response.text().catch(() => '');
+        let message = 'Failed to analyze history';
+        try {
+          const j = JSON.parse(text);
+          message = j?.error || message;
+          if (j?.details) message += `: ${j.details}`;
+        } catch (_) {
+          if (text) message = text;
+        }
+        throw new Error(message);
+      }
+
+      const data = await response.json();
+      setProgress(100);
+      setResults(data);
+    } catch (e: any) {
+      setError(e?.message || 'An error occurred');
+      setResults(mockResults);
+    } finally {
+      setIsAnalyzing(false);
+    }
   };
 
   const handleReset = () => {
@@ -257,7 +296,58 @@ const HealthRiskAssessment = () => {
         </div>
       </div>
 
-      {/* Chronic Conditions */}
+      {/* Past diagnoses (box list) */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Past Diagnoses</label>
+        <textarea
+          placeholder="e.g., Diabetes (since 2018); Hypertension (since 2020)"
+          className="medical-input w-full min-h-[70px] p-2 rounded"
+          onChange={(e) => handleInputChange('chronicConditions', e.target.value.split(';').map(s => s.trim()).filter(Boolean))}
+        />
+        <div className="text-xs text-muted-foreground mt-1">Separate items with semicolons</div>
+      </div>
+
+      {/* Medications (box format) */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Medications</label>
+        <textarea
+          placeholder="One per line: Name, dose, frequency\nMetformin, 500mg, 2x daily\nAmlodipine, 10mg, 1x daily"
+          className="medical-input w-full min-h-[90px] p-2 rounded"
+          value={formData.medications}
+          onChange={(e) => handleInputChange('medications', e.target.value)}
+        />
+      </div>
+
+      {/* Allergies */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Allergies</label>
+        <textarea
+          placeholder="e.g., Penicillin; Peanuts"
+          className="medical-input w-full min-h-[60px] p-2 rounded"
+          onChange={(e) => handleInputChange('allergies', e.target.value.split(';').map(s => s.trim()).filter(Boolean))}
+        />
+      </div>
+
+      {/* Family history */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Family History</label>
+        <textarea
+          placeholder="e.g., Father – Heart disease; Mother – Cancer"
+          className="medical-input w-full min-h-[60px] p-2 rounded"
+          onChange={(e) => handleInputChange('familyHistory', e.target.value.split(';').map(s => s.trim()).filter(Boolean))}
+        />
+      </div>
+
+      {/* Labs */}
+      <div>
+        <label className="block text-sm font-medium text-foreground mb-2">Lab Results</label>
+        <textarea
+          placeholder="e.g., HbA1c=7.5; BP=140/90; LDL=130"
+          className="medical-input w-full min-h-[70px] p-2 rounded"
+          onChange={(e) => handleInputChange('labs', e.target.value.split(';').map(s => s.trim()).filter(Boolean))}
+        />
+        <div className="text-xs text-muted-foreground mt-1">Separate items with semicolons. Use key=value format where possible.</div>
+      </div>
       <div>
         <label className="block text-sm font-medium text-foreground mb-2">Chronic Conditions</label>
         <div className="grid grid-cols-2 gap-2">
@@ -299,6 +389,9 @@ const HealthRiskAssessment = () => {
       <p className="text-sm text-muted-foreground">
         Complete the health questionnaire to get your risk assessment
       </p>
+      {error ? (
+        <p className="text-sm text-destructive mt-4">{error}</p>
+      ) : null}
     </div>
   ) : results ? (
     <div className="space-y-6 animate-fade-in">

@@ -60,6 +60,43 @@ This project is built with:
 - shadcn-ui
 - Tailwind CSS
 
+## Skin image analysis (Gemini)
+
+This app includes an Express backend that accepts a skin image upload and forwards it to Gemini 1.5 for multimodal analysis. Results are shown in the `Skin Disease Classifier` tool.
+
+Important: This is not a medical diagnosis. Consult a dermatologist or qualified clinician.
+
+### Setup
+
+1. Create a `.env` file in the project root with:
+
+```
+GEMINI_API_KEY=your_api_key_here
+PORT=3001
+```
+
+2. Install dependencies:
+
+```
+npm install
+```
+
+3. Run backend and frontend together (frontend proxies `/api` to backend):
+
+```
+npm run dev:all
+```
+
+### API
+
+POST `/api/skin/analyze`
+
+Form fields:
+- `image` (required): file (jpeg/png), up to 5MB
+- `affectedArea` (optional): string
+
+Response: JSON with possible conditions, recommendations, disclaimer, and sources.
+
 ## How can I deploy this project?
 
 Simply open [Lovable](https://lovable.dev/projects/e555b8cf-8c9a-45db-bf3a-8b39857b697d) and click on Share -> Publish.
