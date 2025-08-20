@@ -88,12 +88,20 @@ export const features: Feature[] = [
       {
         id: 'pdf-summarizer',
         name: 'PDF OCR & Lab Summarizer',
-        description: 'Extract and summarize key information from medical PDFs',
+        description: 'Extract and summarize key information from medical PDFs using OCR and Gemini AI',
         icon: '📄',
         inputType: 'file',
         mockOutput: {
-          keyFindings: ['Hemoglobin: 12.5 g/dL (Normal)', 'Cholesterol: 220 mg/dL (Elevated)', 'Blood Sugar: 95 mg/dL (Normal)'],
-          summary: 'Overall health parameters are within acceptable ranges with mild cholesterol elevation.'
+          summary: 'Overall health parameters are within acceptable ranges with mild cholesterol elevation.',
+          keyFindings: [
+            { finding: 'Hemoglobin: 12.5 g/dL', significance: 'Normal', category: 'Lab Result', details: 'Within normal range' },
+            { finding: 'Cholesterol: 220 mg/dL', significance: 'Medium', category: 'Alert', details: 'Elevated above normal range' },
+            { finding: 'Blood Sugar: 95 mg/dL', significance: 'Normal', category: 'Lab Result', details: 'Within normal range' }
+          ],
+          criticalAlerts: ['Cholesterol levels require monitoring'],
+          recommendations: ['Reduce saturated fat intake', 'Increase physical activity'],
+          riskLevel: 'Low',
+          nextSteps: ['Follow up in 3 months', 'Consider dietary changes']
         }
       },
       {

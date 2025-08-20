@@ -139,32 +139,32 @@ const EyeDiseaseDetector = () => {
           Upload Eye Image
         </label>
         <div className="flex items-center gap-3">
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            onChange={handleFileUpload}
-            className="hidden"
-            id="eye-image-upload"
-          />
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileUpload}
+              className="hidden"
+              id="eye-image-upload"
+            />
           <Button
             type="button"
             variant="outline"
             onClick={() => fileInputRef.current?.click()}
             className="flex items-center gap-2"
-          >
-            <Upload className="w-4 h-4" />
+            >
+              <Upload className="w-4 h-4" />
             Choose Image
           </Button>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <Camera className="w-4 h-4 mr-2" />
-            Camera
-          </Button>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Camera className="w-4 h-4 mr-2" />
+              Camera
+            </Button>
         </div>
 
         {/* Image Preview */}
@@ -191,47 +191,47 @@ const EyeDiseaseDetector = () => {
         <label className="block text-sm font-medium text-foreground mb-2">
           Affected Eye Area (Optional)
         </label>
-        <Select value={affectedArea} onValueChange={setAffectedArea}>
+          <Select value={affectedArea} onValueChange={setAffectedArea}>
           <SelectTrigger className="medical-input">
-            <SelectValue placeholder="Select affected area" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="left-eye">Left Eye</SelectItem>
-            <SelectItem value="right-eye">Right Eye</SelectItem>
-            <SelectItem value="both-eyes">Both Eyes</SelectItem>
-            <SelectItem value="eyelid">Eyelid</SelectItem>
-            <SelectItem value="cornea">Cornea</SelectItem>
-            <SelectItem value="conjunctiva">Conjunctiva</SelectItem>
-            <SelectItem value="sclera">Sclera (White part)</SelectItem>
-            <SelectItem value="around-eye">Around Eye</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+              <SelectValue placeholder="Select affected area" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="left-eye">Left Eye</SelectItem>
+              <SelectItem value="right-eye">Right Eye</SelectItem>
+              <SelectItem value="both-eyes">Both Eyes</SelectItem>
+              <SelectItem value="eyelid">Eyelid</SelectItem>
+              <SelectItem value="cornea">Cornea</SelectItem>
+              <SelectItem value="conjunctiva">Conjunctiva</SelectItem>
+              <SelectItem value="sclera">Sclera (White part)</SelectItem>
+              <SelectItem value="around-eye">Around Eye</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-      {/* API Quota Information */}
-      <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-        <div className="flex items-start space-x-2">
-          <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
-          <div className="text-amber-800 text-sm">
-            <p className="font-medium">API Quota Notice</p>
-            <p className="text-amber-700">
-              This feature uses Google's Gemini AI API. Free tier users have a daily limit of 50 requests. 
-              If you encounter quota errors, please try again later or consider upgrading your API plan.
-            </p>
+        {/* API Quota Information */}
+        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+          <div className="flex items-start space-x-2">
+            <div className="w-2 h-2 bg-amber-500 rounded-full mt-2 flex-shrink-0"></div>
+            <div className="text-amber-800 text-sm">
+              <p className="font-medium">API Quota Notice</p>
+              <p className="text-amber-700">
+                This feature uses Google's Gemini AI API. Free tier users have a daily limit of 50 requests. 
+                If you encounter quota errors, please try again later or consider upgrading your API plan.
+              </p>
+            </div>
           </div>
         </div>
-      </div>
 
       {/* Analyze Button and Loading */}
       <div className="flex items-center gap-3 pt-4">
-        <Button
+          <Button
           type="button"
-          onClick={handleAnalyze}
-          disabled={!image || isAnalyzing}
+            onClick={handleAnalyze}
+            disabled={!image || isAnalyzing}
           className="btn-medical text-white"
         >
           {isAnalyzing ? 'Analyzing...' : 'Run AI Analysis'}
-        </Button>
+          </Button>
         {isAnalyzing && (
           <div className="inline-flex items-center gap-2 text-sm text-muted-foreground">
             <span className="relative flex h-3 w-3">
@@ -239,7 +239,7 @@ const EyeDiseaseDetector = () => {
               <span className="relative inline-flex rounded-full h-3 w-3 bg-primary" />
             </span>
             Processing image...
-          </div>
+        </div>
         )}
       </div>
     </>
@@ -257,7 +257,7 @@ const EyeDiseaseDetector = () => {
       {error ? (
         <p className="text-sm text-destructive mt-4">{error}</p>
       ) : null}
-    </div>
+                  </div>
   ) : results ? (
     <div className="space-y-6 animate-fade-in">
       {/* Submitted context */}
@@ -269,23 +269,23 @@ const EyeDiseaseDetector = () => {
           <div className="text-sm">
             <div className="font-medium text-foreground">Submitted Image</div>
             <div className="text-muted-foreground">{affectedArea ? `Affected area: ${affectedArea}` : 'Affected area: unspecified'}</div>
-          </div>
-        </div>
-      </div>
+                </div>
+              </div>
+            </div>
 
       <div className="rounded-lg border p-4 bg-primary/5">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <TrendingUp className="w-5 h-5 text-primary" />
             <span className="text-lg font-semibold text-foreground">Analysis Results</span>
-          </div>
+            </div>
           <div className="flex items-center gap-2">
             <Badge variant="outline" className={getRiskColor(results.riskLevel)}>
                 {results.riskLevel} Risk
               </Badge>
             <span className="text-sm font-bold text-primary">{results.confidence}%</span>
-          </div>
-        </div>
+              </div>
+            </div>
         {results.explanation ? (
           <p className="text-sm text-muted-foreground mt-2">{results.explanation}</p>
         ) : null}
@@ -294,14 +294,14 @@ const EyeDiseaseDetector = () => {
         </p>
       </div>
 
-      <Tabs defaultValue="overview" className="w-full">
+        <Tabs defaultValue="overview" className="w-full">
         <TabsList className="grid grid-cols-5 w-full">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="details">Disease Details</TabsTrigger>
-          <TabsTrigger value="care">Care & Tests</TabsTrigger>
-          <TabsTrigger value="meds">Medication Guidance</TabsTrigger>
-          <TabsTrigger value="sources">Sources</TabsTrigger>
-        </TabsList>
+            <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="details">Disease Details</TabsTrigger>
+            <TabsTrigger value="care">Care & Tests</TabsTrigger>
+            <TabsTrigger value="meds">Medication Guidance</TabsTrigger>
+            <TabsTrigger value="sources">Sources</TabsTrigger>
+          </TabsList>
 
         <TabsContent value="overview" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -361,49 +361,49 @@ const EyeDiseaseDetector = () => {
                       <div className="flex items-center space-x-2">
                         <Badge variant="outline" className={getRiskColor(disease.severity)}>
                           {disease.severity} Risk
-                        </Badge>
+                          </Badge>
                         <span className="text-sm font-bold text-primary">
                           {Math.max(0, Math.min(100, Math.round(disease.probability)))}%
                         </span>
+                        </div>
                       </div>
-                    </div>
                     <Progress value={Math.max(0, Math.min(100, Math.round(disease.probability)))} className="medical-progress h-2" />
                     {disease.summary && (
                       <p className="text-xs text-muted-foreground mt-2">{disease.summary}</p>
                     )}
-                  </div>
+                    </div>
                 ))}
-              </div>
+                  </div>
               {/* Severity legend */}
               <div className="flex items-center gap-3 text-xs text-muted-foreground mt-3">
                 <span className="inline-flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-red-500"></span> High</span>
                 <span className="inline-flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-yellow-500"></span> Medium</span>
                 <span className="inline-flex items-center gap-1"><span className="inline-block h-2 w-2 rounded-full bg-green-500"></span> Low</span>
-              </div>
-            </div>
-          </div>
+                    </div>
+                  </div>
+                </div>
 
-          {results.explanation && (
+                {results.explanation && (
             <div className="mt-6 rounded-2xl border p-4 bg-gradient-to-br from-background to-accent/5">
               <h3 className="text-lg font-semibold text-foreground mb-3">AI Analysis</h3>
               <p className="text-muted-foreground">{results.explanation}</p>
-            </div>
-          )}
+                  </div>
+                )}
 
-          {results.triage && (
+                {results.triage && (
             <div className="mt-6 rounded-2xl border p-4 bg-gradient-to-br from-background to-primary/5">
               <h3 className="text-lg font-semibold text-foreground mb-3">Care Level</h3>
-              <Badge 
-                variant={results.triage === 'Emergency' ? 'destructive' : 
-                        results.triage === 'Urgent care' ? 'destructive' :
-                        results.triage === 'Primary care' ? 'secondary' : 'default'}
-                className="text-lg px-4 py-2"
-              >
-                {results.triage}
-              </Badge>
-            </div>
-          )}
-        </TabsContent>
+                    <Badge 
+                      variant={results.triage === 'Emergency' ? 'destructive' : 
+                              results.triage === 'Urgent care' ? 'destructive' :
+                              results.triage === 'Primary care' ? 'secondary' : 'default'}
+                      className="text-lg px-4 py-2"
+                    >
+                      {results.triage}
+                    </Badge>
+                  </div>
+                )}
+          </TabsContent>
 
         <TabsContent value="details" className="mt-4">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
@@ -415,30 +415,30 @@ const EyeDiseaseDetector = () => {
                     const isActive = index === selectedDiseaseIndex;
                     return (
                       <button
-                        key={index}
-                        onClick={() => setSelectedDiseaseIndex(index)}
+                          key={index}
+                          onClick={() => setSelectedDiseaseIndex(index)}
                         className={`w-full text-left rounded-md p-3 border transition-colors ${isActive ? 'bg-primary/10 border-primary text-foreground' : 'bg-background hover:bg-accent/40'}`}
-                      >
-                        <div className="flex items-center justify-between">
+                        >
+                          <div className="flex items-center justify-between">
                           <span className="font-medium">{disease.name}</span>
                           <Badge variant="outline" className={getRiskColor(disease.severity)}>
                             {Math.max(0, Math.min(100, Math.round(disease.probability)))}%
-                          </Badge>
-                        </div>
+                            </Badge>
+                          </div>
                         {disease.summary && (
                           <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{disease.summary}</p>
                         )}
                       </button>
                     );
                   })}
-                </div>
+                        </div>
               </ScrollArea>
-            </div>
+                  </div>
 
             {/* Right: detail view */}
             <div className="lg:col-span-2 rounded-lg border p-4">
-              {results.diseases?.[selectedDiseaseIndex] && (
-                <div>
+                    {results.diseases?.[selectedDiseaseIndex] && (
+                        <div>
                   <div className="flex items-center justify-between">
                     <div className="text-lg font-semibold">{results.diseases[selectedDiseaseIndex].name}</div>
                     <div className="flex items-center gap-2">
@@ -446,8 +446,8 @@ const EyeDiseaseDetector = () => {
                         {results.diseases[selectedDiseaseIndex].severity}
                       </Badge>
                       <Badge>{Math.max(0, Math.min(100, Math.round(results.diseases[selectedDiseaseIndex].probability)))}%</Badge>
-                    </div>
-                  </div>
+                            </div>
+                          </div>
                   {results.diseases[selectedDiseaseIndex].summary && (
                     <p className="text-sm text-muted-foreground mt-2 leading-relaxed">{results.diseases[selectedDiseaseIndex].summary}</p>
                   )}
@@ -458,7 +458,7 @@ const EyeDiseaseDetector = () => {
                       <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
                         {results.diseases[selectedDiseaseIndex].redFlags.map((r: string, i: number) => <li key={i} className="">{r}</li>)}
                       </ul>
-                    </div>
+                                </div>
                   )}
 
                   {Array.isArray(results.diseases[selectedDiseaseIndex].tests) && results.diseases[selectedDiseaseIndex].tests.length > 0 && (
@@ -467,8 +467,8 @@ const EyeDiseaseDetector = () => {
                       <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
                         {results.diseases[selectedDiseaseIndex].tests.map((t: string, i: number) => <li key={i} className="">{t}</li>)}
                       </ul>
-                    </div>
-                  )}
+                          </div>
+                        )}
 
                   {Array.isArray(results.diseases[selectedDiseaseIndex].careAdvice) && results.diseases[selectedDiseaseIndex].careAdvice.length > 0 && (
                     <div className="mt-4">
@@ -476,13 +476,13 @@ const EyeDiseaseDetector = () => {
                       <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
                         {results.diseases[selectedDiseaseIndex].careAdvice.map((c: string, i: number) => <li key={i} className="">{c}</li>)}
                       </ul>
-                    </div>
-                  )}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          </div>
-        </TabsContent>
+          </TabsContent>
 
         <TabsContent value="care" className="mt-4 space-y-4">
           {Array.isArray(results.redFlags) && results.redFlags.length > 0 && (
@@ -491,7 +491,7 @@ const EyeDiseaseDetector = () => {
               <ul className="list-disc pl-5 text-sm text-foreground">
                 {results.redFlags.map((r: string, i: number) => <li key={i}>{r}</li>)}
               </ul>
-            </div>
+                        </div>
           )}
           {Array.isArray(results.suggestedTests) && results.suggestedTests.length > 0 && (
             <div className="rounded-lg border p-4">
@@ -499,87 +499,87 @@ const EyeDiseaseDetector = () => {
               <ul className="list-disc pl-5 text-sm text-foreground">
                 {results.suggestedTests.map((t: string, i: number) => <li key={i}>{t}</li>)}
               </ul>
-            </div>
+                    </div>
           )}
-          <div>
+                  <div>
             <h3 className="text-lg font-semibold text-foreground mb-3">Recommendations</h3>
             <div className="space-y-2">
               {results.recommendations?.map((rec: string, index: number) => (
                 <div key={index} className="flex items-start space-x-3">
                   <CheckCircle className="w-4 h-4 text-success mt-0.5 flex-shrink-0" />
                   <span className="text-sm text-foreground">{rec}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="meds" className="mt-4 space-y-4">
-          {(() => {
-            const topDisease = results.diseases?.[0];
-            const globalMeds = Array.isArray(results.medications) ? results.medications : [];
-            const topMeds = Array.isArray(topDisease?.medications) && topDisease.medications.length > 0
-              ? topDisease.medications
-              : globalMeds;
-            return (
-              <>
-                {topDisease && topMeds.length > 0 && (
-                  <div className="rounded-lg border p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="text-sm font-medium">{topDisease.name} — medication suggestions</div>
-                      <Badge variant="outline" className={getRiskColor(topDisease.severity)}>
-                        {topDisease.severity || 'Low'}
-                      </Badge>
+                        </div>
+                      ))}
                     </div>
-                    <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed mt-2">
-                      {topMeds.map((m: string, i: number) => <li key={i}>{m}</li>)}
-                    </ul>
                   </div>
-                )}
-                {globalMeds.length > 0 && (
-                  <div className="rounded-lg border p-4">
-                    <div className="text-sm font-medium mb-2">General medication guidance</div>
-                    <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
-                      {globalMeds.map((m: string, i: number) => <li key={i}>{m}</li>)}
-                    </ul>
-                  </div>
-                )}
-                <div className="rounded-lg border p-4 bg-warning/5 border-warning/20">
-                  <div className="text-xs text-muted-foreground">
-                    This guidance is informational and not a substitute for professional medical advice. Always consult a healthcare provider for prescriptions, dosing, and contraindications.
-                  </div>
-                </div>
-              </>
-            );
-          })()}
-        </TabsContent>
+          </TabsContent>
 
-        <TabsContent value="sources" className="mt-4 space-y-4">
-          {Array.isArray(results.sources) && results.sources.length > 0 && (
-            <div className="rounded-lg border p-4">
-              <div className="text-sm font-medium mb-2">General sources</div>
-              <ul className="list-disc pl-5 text-sm text-foreground">
-                {results.sources.map((s: any, i: number) => (
-                  <li key={i}><a className="text-primary underline" href={s.url} target="_blank" rel="noreferrer">{s.title}</a></li>
-                ))}
-              </ul>
-            </div>
-          )}
-          {results.diseases.map((disease: any, index: number) => (
-            Array.isArray(disease.sources) && disease.sources.length > 0 ? (
-              <div key={index} className="rounded-lg border p-4">
-                <div className="text-sm font-medium mb-2">{disease.name} sources</div>
+          <TabsContent value="meds" className="mt-4 space-y-4">
+            {(() => {
+              const topDisease = results.diseases?.[0];
+              const globalMeds = Array.isArray(results.medications) ? results.medications : [];
+              const topMeds = Array.isArray(topDisease?.medications) && topDisease.medications.length > 0
+                ? topDisease.medications
+                : globalMeds;
+              return (
+                <>
+                  {topDisease && topMeds.length > 0 && (
+                    <div className="rounded-lg border p-4">
+                      <div className="flex items-center justify-between">
+                        <div className="text-sm font-medium">{topDisease.name} — medication suggestions</div>
+                        <Badge variant="outline" className={getRiskColor(topDisease.severity)}>
+                          {topDisease.severity || 'Low'}
+                        </Badge>
+                      </div>
+                      <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed mt-2">
+                        {topMeds.map((m: string, i: number) => <li key={i}>{m}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  {globalMeds.length > 0 && (
+                    <div className="rounded-lg border p-4">
+                      <div className="text-sm font-medium mb-2">General medication guidance</div>
+                      <ul className="list-disc pl-5 text-sm text-foreground space-y-1.5 leading-relaxed">
+                        {globalMeds.map((m: string, i: number) => <li key={i}>{m}</li>)}
+                      </ul>
+                    </div>
+                  )}
+                  <div className="rounded-lg border p-4 bg-warning/5 border-warning/20">
+                    <div className="text-xs text-muted-foreground">
+                      This guidance is informational and not a substitute for professional medical advice. Always consult a healthcare provider for prescriptions, dosing, and contraindications.
+                    </div>
+                  </div>
+                </>
+              );
+            })()}
+          </TabsContent>
+
+          <TabsContent value="sources" className="mt-4 space-y-4">
+            {Array.isArray(results.sources) && results.sources.length > 0 && (
+              <div className="rounded-lg border p-4">
+                <div className="text-sm font-medium mb-2">General sources</div>
                 <ul className="list-disc pl-5 text-sm text-foreground">
-                  {disease.sources.map((s: any, i: number) => (
+                  {results.sources.map((s: any, i: number) => (
                     <li key={i}><a className="text-primary underline" href={s.url} target="_blank" rel="noreferrer">{s.title}</a></li>
                   ))}
                 </ul>
               </div>
-            ) : null
-          ))}
-        </TabsContent>
-      </Tabs>
-    </div>
+            )}
+            {results.diseases.map((disease: any, index: number) => (
+              Array.isArray(disease.sources) && disease.sources.length > 0 ? (
+                <div key={index} className="rounded-lg border p-4">
+                  <div className="text-sm font-medium mb-2">{disease.name} sources</div>
+                  <ul className="list-disc pl-5 text-sm text-foreground">
+                    {disease.sources.map((s: any, i: number) => (
+                      <li key={i}><a className="text-primary underline" href={s.url} target="_blank" rel="noreferrer">{s.title}</a></li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null
+            ))}
+          </TabsContent>
+        </Tabs>
+        </div>
   ) : null;
 
   return (

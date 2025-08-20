@@ -14,6 +14,7 @@ import DrugInteractionChecker from "./components/models/DrugInteractionChecker";
 import VoiceEmotionClassifier from "./components/models/VoiceEmotionClassifier";
 import MealPlanGenerator from "./components/models/MealPlanGenerator";
 import HealthRiskAssessment from "./components/models/HealthRiskAssessment";
+import HealthReportDecoder from "./components/models/HealthReportDecoder";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -40,7 +41,7 @@ const App = () => (
             <Route path="model/eye-detector" element={<EyeDiseaseDetector />} />
             
             {/* Health Report Models */}
-            <Route path="model/pdf-summarizer" element={<SymptomPredictor />} />
+            <Route path="model/pdf-summarizer" element={<HealthReportDecoder />} />
             <Route path="model/imaging-interpreter" element={<SymptomPredictor />} />
             <Route path="model/trend-forecaster" element={<SymptomPredictor />} />
             
