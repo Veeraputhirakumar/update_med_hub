@@ -92,16 +92,34 @@ export const features: Feature[] = [
         icon: '📄',
         inputType: 'file',
         mockOutput: {
+          patientInfo: {
+            name: 'John Smith',
+            age: '45 years',
+            gender: 'Male',
+            dateOfTest: '2024-01-15',
+            patientId: 'MRN-12345',
+            referringPhysician: 'Dr. Sarah Johnson',
+            bloodPressure: '120/80 mmHg',
+            heartRate: '72 bpm',
+            temperature: '98.6°F',
+            chiefComplaint: 'Routine health checkup and cholesterol monitoring'
+          },
           summary: 'Overall health parameters are within acceptable ranges with mild cholesterol elevation.',
           keyFindings: [
-            { finding: 'Hemoglobin: 12.5 g/dL', significance: 'Normal', category: 'Lab Result', details: 'Within normal range' },
-            { finding: 'Cholesterol: 220 mg/dL', significance: 'Medium', category: 'Alert', details: 'Elevated above normal range' },
-            { finding: 'Blood Sugar: 95 mg/dL', significance: 'Normal', category: 'Lab Result', details: 'Within normal range' }
+            { finding: 'Hemoglobin: 12.5 g/dL', significance: 'Low', category: 'Lab Result', details: 'Within normal range (12.0-15.5 g/dL)' },
+            { finding: 'Cholesterol: 220 mg/dL', significance: 'Medium', category: 'Alert', details: 'Elevated above normal range (<200 mg/dL)' },
+            { finding: 'Blood Sugar: 95 mg/dL', significance: 'Low', category: 'Lab Result', details: 'Within normal range (70-100 mg/dL)' },
+            { finding: 'White Blood Cells: 7.2 K/μL', significance: 'Low', category: 'Lab Result', details: 'Within normal range (4.5-11.0 K/μL)' },
+            { finding: 'Platelets: 250 K/μL', significance: 'Low', category: 'Lab Result', details: 'Within normal range (150-450 K/μL)' }
           ],
           criticalAlerts: ['Cholesterol levels require monitoring'],
-          recommendations: ['Reduce saturated fat intake', 'Increase physical activity'],
-          riskLevel: 'Low',
-          nextSteps: ['Follow up in 3 months', 'Consider dietary changes']
+          recommendations: ['Reduce saturated fat intake', 'Increase physical activity', 'Monitor cholesterol levels monthly'],
+          labValues: {
+            normal: ['Hemoglobin: 12.5 g/dL (Normal: 12.0-15.5 g/dL)', 'Blood Sugar: 95 mg/dL (Normal: 70-100 mg/dL)', 'White Blood Cells: 7.2 K/μL (Normal: 4.5-11.0 K/μL)', 'Platelets: 250 K/μL (Normal: 150-450 K/μL)'],
+            abnormal: ['Cholesterol: 220 mg/dL (Normal: <200 mg/dL) - Elevated']
+          },
+          riskLevel: 'Medium',
+          nextSteps: ['Follow up in 3 months', 'Consider dietary changes', 'Schedule lipid panel retest']
         }
       },
       {
