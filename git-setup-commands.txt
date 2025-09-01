@@ -1,0 +1,27 @@
+# Git Setup Commands for update_med_hub
+
+# Navigate to your project directory
+cd C:\Users\TEMP.RITDC.007\Desktop\update_med_hub
+
+# Initialize git repository
+git init
+
+# Add your GitHub repository as remote origin
+git remote add origin https://github.com/Veeraputhirakumar/update_med_hub.git
+
+# Configure git (replace with your details)
+git config user.name "Your Name"
+git config user.email "your.email@example.com"
+
+# Add all files to staging
+git add .
+
+# Create initial commit
+git commit -m "Initial commit: Updated AI Meal Plan Generator with new UI/UX design matching SymptomPredictor"
+
+# Push to GitHub (you may need to authenticate)
+git push -u origin main
+
+# If the above fails due to existing content, try:
+git pull origin main --allow-unrelated-histories
+git push -u origin main

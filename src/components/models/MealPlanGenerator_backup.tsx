@@ -110,6 +110,9 @@ const MealPlanGenerator = () => {
     culturalMode: 'none'
   });
 
+  // Days selection state
+  const [selectedDays, setSelectedDays] = useState(7);
+
   // Auto-calculate BMI
   useEffect(() => {
     if (userProfile.height && userProfile.weight) {
@@ -267,7 +270,7 @@ UNIQUE ENGAGEMENT:
   const callGeminiForMealPlan = async (userProfileText: string): Promise<MealPlan[]> => {
     const GEMINI_API_KEY = 'AIzaSyBUIwW1exVkPrqPT_jLtIRG1wiivEnRn9I';
     
-    const prompt = `You are an expert nutritionist and meal planner. Create a comprehensive 7-day personalized meal plan based on the user's profile.
+    const prompt = `You are an expert nutritionist and meal planner. Create a comprehensive ${selectedDays}-day personalized meal plan based on the user's profile.
 
 Please generate a meal plan in the following JSON format:
 
@@ -310,7 +313,7 @@ Please generate a meal plan in the following JSON format:
 }
 
 IMPORTANT GUIDELINES:
-1. Create exactly 7 days of meal plans (Monday to Sunday)
+1. Create exactly ${selectedDays} days of meal plans starting from Monday
 2. Consider the user's diet type: ${userProfile.dietType}
 3. Include their favorite cuisines: ${userProfile.cuisinePreferences.join(', ')}
 4. Avoid foods they dislike: ${userProfile.foodDislikes.join(', ') || 'None'}
@@ -466,9 +469,10 @@ Generate the complete 7-day meal plan now:`;
       }
     ];
     
-    // Generate 6 more days with variations
+    // Generate additional days based on selectedDays
     const days = ['Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
-    days.forEach((day, index) => {
+    const additionalDays = days.slice(0, selectedDays - 1);
+    additionalDays.forEach((day, index) => {
       mockPlan.push({
         ...mockPlan[0],
         day: day,
@@ -526,15 +530,18 @@ Generate the complete 7-day meal plan now:`;
           </div>
         </div>
 
-        <div className={`grid grid-cols-1 ${!mealPlan.length ? 'lg:grid-cols-2' : ''} gap-8`}>
-          {/* Input Panel */}
-          {!mealPlan.length && (
+        {/* Single Full-Width Form */}
+        {!mealPlan.length && (
+          <div className="max-w-5xl mx-auto">
             <Card className="medical-card">
-              <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Settings className="w-5 h-5 text-primary" />
-                  <span>Interactive Health & Preference Profile</span>
+              <CardHeader className="text-center pb-6">
+                <CardTitle className="flex items-center justify-center space-x-2 text-2xl">
+                  <Settings className="w-6 h-6 text-primary" />
+                  <span>Create Your Personalized Meal Plan</span>
                 </CardTitle>
+                <p className="text-muted-foreground mt-2">
+                  Tell us about yourself to get AI-powered nutrition recommendations
+                </p>
               </CardHeader>
               <CardContent className="space-y-6">
                 
@@ -614,6 +621,33 @@ Generate the complete 7-day meal plan now:`;
                       </div>
                     </div>
                   )}
+
+                  {/* Days Selection Bar */}
+                  <div className="bg-gradient-to-r from-primary/10 to-accent/10 rounded-xl p-6 border">
+                    <h4 className="font-semibold text-foreground mb-4 text-center">
+                      How many days meal plan do you want?
+                    </h4>
+                    <div className="flex items-center justify-center space-x-2">
+                      {[1, 2, 3, 4, 5, 6, 7].map((day) => (
+                        <Button
+                          key={day}
+                          variant={selectedDays === day ? "default" : "outline"}
+                          size="lg"
+                          onClick={() => setSelectedDays(day)}
+                          className={`w-12 h-12 rounded-full font-bold ${
+                            selectedDays === day 
+                              ? 'bg-primary text-white shadow-lg scale-110' 
+                              : 'hover:bg-primary/10'
+                          } transition-all duration-200`}
+                        >
+                          {day}
+                        </Button>
+                      ))}
+                    </div>
+                    <p className="text-center text-muted-foreground mt-3">
+                      Selected: <span className="font-semibold text-primary">{selectedDays} day{selectedDays > 1 ? 's' : ''}</span> meal plan
+                    </p>
+                  </div>
                 </div>
 
                 <Separator />
@@ -886,38 +920,19 @@ Generate the complete 7-day meal plan now:`;
                 </div>
               </CardContent>
             </Card>
-          )}
+          </div>
+        )}
 
-          {/* Output Panel */}
-          <Card className="medical-card">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="flex items-center space-x-2">
-                  <TrendingUp className="w-5 h-5 text-primary" />
-                  <span>Analysis Results</span>
-                </CardTitle>
-                {mealPlan.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => { setMealPlan([]); setCurrentStep(1); }}>
-                    Edit Input
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {!mealPlan.length && !isProcessing && (
-                <div className="text-center py-12">
-                  <div className="text-6xl mb-4 opacity-50">🍽️</div>
-                  <h3 className="text-lg font-medium text-muted-foreground mb-2">
-                    Awaiting Analysis
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Enter your health profile and click "Generate My AI Meal Plan" to get personalized results
-                  </p>
-                </div>
-              )}
-
-              {mealPlan.length > 0 && (
-                <div className="space-y-6 animate-fade-in">
+        {/* Results Display - Full Width */}
+        {mealPlan.length > 0 && (
+          <div className="max-w-7xl mx-auto mt-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-2xl font-bold text-foreground">Your Personalized Meal Plan</h2>
+              <Button variant="outline" onClick={() => { setMealPlan([]); }}>
+                Create New Plan
+              </Button>
+            </div>
+            <div className="space-y-6 animate-fade-in">
                   {/* Visual Dashboard */}
                   <div className="rounded-2xl border p-4 bg-gradient-to-br from-primary/10 via-background to-accent/10 backdrop-blur-sm shadow-lg hover:shadow-xl transition-shadow">
                     <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
@@ -1215,13 +1230,10 @@ Generate the complete 7-day meal plan now:`;
               >
                 <RefreshCw className="w-4 h-4" />
                 Create New Plan
-                  </Button>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-        </div>
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
