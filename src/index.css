@@ -186,13 +186,13 @@
 @layer components {
   /* Medical Card Components */
   .medical-card {
-    @apply bg-card rounded-2xl border border-border transition-all duration-300;
+    @apply bg-card rounded-2xl border border-border transition-all duration-150;
     box-shadow: var(--shadow-card);
   }
   
   .medical-card:hover {
-    @apply scale-105 border-primary/20;
-    box-shadow: var(--shadow-card-hover);
+    @apply border-primary/10;
+    box-shadow: var(--shadow-card);
   }
   
   .feature-card {
@@ -201,20 +201,19 @@
   }
   
   .feature-card:hover {
-    @apply border-primary/30;
-    box-shadow: var(--shadow-feature);
-    transform: translateY(-4px) scale(1.02);
+    @apply border-primary/20;
+    box-shadow: var(--shadow-card);
   }
   
   /* Medical Buttons */
   .btn-medical {
-    @apply px-6 py-3 rounded-xl font-medium transition-all duration-300;
+    @apply px-6 py-3 rounded-xl font-medium transition-all duration-150;
     background: var(--gradient-primary);
   }
   
   .btn-medical:hover {
-    @apply shadow-lg scale-105;
-    filter: brightness(1.1);
+    @apply shadow-md;
+    filter: brightness(1.05);
   }
   
   /* Medical Icons */
@@ -240,7 +239,7 @@
   
   /* Medical Forms */
   .medical-input {
-    @apply w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all duration-200;
+    @apply w-full px-4 py-3 border-2 border-border rounded-xl focus:border-primary focus:ring-2 focus:ring-primary/10 transition-all duration-150;
   }
   
   /* Medical Gradients */
